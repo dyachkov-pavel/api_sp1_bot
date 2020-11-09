@@ -13,10 +13,9 @@ logger = logging.getLogger()
 load_dotenv()
 
 
-PRAKTIKUM_TOKEN = os.getenv("PRAKTIKUM_TOKEN")
+PRAKTIKUM_TOKEN = os.getenv('PRAKTIKUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-
 
 def parse_homework_status(homework):
     homework_name = homework['homework_name']
@@ -31,7 +30,8 @@ def get_homework_statuses(current_timestamp):
     headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
     params = {'from_date': current_timestamp}
     YANDEX_URL = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
-    homework_statuses = requests.get(YANDEX_URL, headers=headers, params=params)
+    homework_statuses = requests.get(
+        YANDEX_URL, headers=headers, params=params)
     return homework_statuses.json()
 
 
@@ -65,10 +65,12 @@ def main():
             continue
         except KeyError as errk:
             logger.error(f'Key Error: {errk}')
-            raise errk
+            time.sleep(5)
+            continue
         except IndexError as erri:
             logger.error(f'Index Error: {erri}')
-            raise erri
+            time.sleep(5)
+            continue
         except requests.exceptions.RequestException as err:
             logger.error(f'OOps: Something Else {err}')
             time.sleep(5)
