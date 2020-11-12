@@ -19,7 +19,7 @@ CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 
 def parse_homework_status(homework):
-    try:
+    if 'homework_name' in homework and 'status' in homework:
         homework_name = homework['homework_name']
         homework_status = homework['status']
         if homework_status == 'rejected':
@@ -27,33 +27,33 @@ def parse_homework_status(homework):
         else:
             verdict = 'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
         return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
-    except KeyError as errk:
-        logger.error(f'Key Error: {errk}')
-        raise errk
-    except IndexError as erri:
-        logger.error(f'Index Error: {erri}')
-        raise erri
+    else: 
+        logger.error(f'Key Error: homework_name and status were not founded')
+        raise KeyError
 
 
 def get_homework_statuses(current_timestamp):
-    if current_timestamp is None:
-        current_timestamp = int(time.time())
+    if current_timestamp is None: current_timestamp = int(time.time())
     headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
     params = {'from_date': current_timestamp}
     YANDEX_URL = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
     try:
         homework_statuses = requests.get(
             YANDEX_URL, headers=headers, params=params)
+        homework_statuses.json()
         return homework_statuses.json()
     except requests.exceptions.HTTPError as errh:
         logger.error(f'Http Error: {errh}')
+        raise errh
     except requests.exceptions.ConnectionError as errc:
         logger.error(f'Error Connecting: {errc}')
+        raise errc
     except requests.exceptions.Timeout as errt:
         logger.error(f'Timeout Error: {errt}')
+        raise errt
     except requests.exceptions.RequestException as err:
         logger.error(f'OOps: Something Else {err}')
-
+        raise err
 
 
 def send_message(message, bot_client):
