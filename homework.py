@@ -19,41 +19,48 @@ CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 
 def parse_homework_status(homework):
-    if 'homework_name' in homework and 'status' in homework:
-        homework_name = homework['homework_name']
-        homework_status = homework['status']
-        if homework_status == 'rejected':
-            verdict = 'К сожалению в работе нашлись ошибки.'
-        else:
-            verdict = 'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
-        return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
-    else: 
-        logger.error(f'Key Error: homework_name and status were not founded')
-        raise KeyError
+    if 'homework_name' not in homework:
+        logger.error(f'Key Error: homework_name was not founded')
+        return (f'Key Error: homework_name was not founded')
+    if 'status' not in homework:
+        logger.error(f'Key Error: status was not founded')
+        return (f'Key Error: status was not founded')
+    homework_name = homework['homework_name']
+    homework_status = homework['status']
+    if homework_status == 'rejected':
+        verdict = 'К сожалению в работе нашлись ошибки.'
+    elif homework_status == 'approved':
+        verdict = 'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
+    else:
+        return f'Неизвестный статус работы'
+    return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
 def get_homework_statuses(current_timestamp):
-    if current_timestamp is None: current_timestamp = int(time.time())
+    if current_timestamp is None:
+        current_timestamp = int(time.time())
     headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
     params = {'from_date': current_timestamp}
     YANDEX_URL = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
     try:
         homework_statuses = requests.get(
             YANDEX_URL, headers=headers, params=params)
-        homework_statuses.json()
         return homework_statuses.json()
     except requests.exceptions.HTTPError as errh:
         logger.error(f'Http Error: {errh}')
-        raise errh
+        return {}
     except requests.exceptions.ConnectionError as errc:
         logger.error(f'Error Connecting: {errc}')
-        raise errc
+        return {}
     except requests.exceptions.Timeout as errt:
         logger.error(f'Timeout Error: {errt}')
-        raise errt
+        return {}
     except requests.exceptions.RequestException as err:
         logger.error(f'OOps: Something Else {err}')
-        raise err
+        return {}
+    except ValueError as errv:
+        logger.error(f'Value Error: {errv}')
+        return {}
 
 
 def send_message(message, bot_client):
