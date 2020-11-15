@@ -19,20 +19,12 @@ CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 
 def parse_homework_status(homework):
-    if 'homework_name' not in homework:
-        key_error = 'Key Error: homework_name was not founded'
-        logger.error(key_error)
-        return key_error
-    if 'status' not in homework:
-        key_error = 'Key Error: status was not founded'
-        logger.error (key_error)
-        return key_error
-    if homework.get('homework_name') == None:
+    homework_name = homework.get('homework_name')
+    homework_status = homework.get('status')
+    if homework_name is None:
         return 'Неизвестное название работы'
-    if homework.get('status') == None:
+    if homework_status is None:
         return 'Неизвестный статус работы'
-    homework_name = homework['homework_name']
-    homework_status = homework['status']
     if homework_status == 'rejected':
         verdict = 'К сожалению в работе нашлись ошибки.'
     if homework_status == 'approved':
